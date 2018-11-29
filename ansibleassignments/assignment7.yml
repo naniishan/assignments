@@ -1,0 +1,36 @@
+---
+  - hosts: all
+    become: true
+    tasks: 
+
+     - name: Ansible check file exists example.
+       stat:
+          path: /home/ubuntu/swapfile
+       register: file_details
+
+     - name: print message if the file exists
+       debug:
+          msg: "The file or directory exists"
+       when: file_details.stat.exists 
+     
+     - name: disable swapfile
+       command: swapoff swapfile
+       when: file_details.stat.exists
+
+     - name: increase the size of the file
+       command: dd if=/dev/zero of=swapfile bs=10k count=3072
+
+     - name: make swapfile system
+       command: mkswap swapfile
+      
+     - name: change the mode and the owners of the file
+       file: dest=/home/ubuntu/swapfile owner=root group=root mode=0600
+
+     - name: add file to the swapon
+       command: swapon swapfile
+
+     - name: write swap entry in fstab
+       mount: name=none src=~/swapfile fstype=swap opts=sw passno=0 dump=0 state=present
+
+# here i am assuming that the path of the swapfile to be in the home directory, and i am increasing the size of the swapfile to be 30 MB, if it is less than 30Mb it will make it 30 MB.
+ 

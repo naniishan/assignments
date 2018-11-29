@@ -1,0 +1,19 @@
+---
+ - hosts: all
+   become: yes
+   become_user: root
+   remote_user: ishanji
+   gather_facts: true
+   tasks:
+    - name: install nginx
+      apt: name=nginx state=present update_cache=yes
+      when: ansible_distribution  == "Ubuntu"
+    
+    - name: delete a previous index.html
+      file: path=/var/www/html/index.html state=absent
+
+    - name: copy index.html to /var/www/html
+      copy: src=/home/ubuntu/index.html dest=/var/www/html
+ 
+    - name: restart the nginx service
+      service: name=nginx state=restarted

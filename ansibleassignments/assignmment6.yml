@@ -1,0 +1,61 @@
+---
+ - hosts: 127.0.0.1
+   become: true
+   connection: local
+   tasks:
+
+
+
+
+# creating new ssh keys in local
+      - name: create new ssh keys
+        command: 'ssh-keygen -t rsa -N "" -f /home/ubuntu/.ssh/new_keys'
+
+
+
+
+# pasting the newly created keys to the remote location
+ - hosts: all
+   become: yes
+   tasks:
+    
+      - name: authorized_keys
+        authorized_key:
+           user: ubuntu
+           state: present
+           key: "{{ lookup('file', '/home/ubuntu/.ssh/new_keys.pub') }}"
+
+
+
+
+
+
+# deleting the previous keys using sed command, second last line of the authorized key file.    
+      - name: deleting previous keys
+        command: chdir=/home/ubuntu/.ssh sed -i 'N;$!P;D' authorized_keys
+
+
+
+
+
+
+# deleting the previously created keys and rename the newly created keys.
+ - hosts: 127.0.0.1
+   connection: local
+   tasks:
+
+
+
+
+      - name: create new ssh keys
+        file: path=/home/ubuntu/.ssh/id_rsa state=absent
+
+      - name: create new ssh keys
+        file: path=/home/ubuntu/.ssh/id_rsa.pub state=absent
+
+      - name: Move foo to bar
+        command: chdir=/home/ubuntu/.ssh mv new_keys id_rsa
+
+      - name: Move foo to bar
+        command: chdir=/home/u buntu/.ssh mv new_keys.pub id_rsa.pub
+
